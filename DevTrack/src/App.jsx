@@ -1,122 +1,138 @@
-import { useState } from 'react'
-import heroImg from './assets/hero.png'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
-import './App.css'
+import { useMemo, useState } from 'react';
+import DashboardSummary from './components/DashboardSummary.jsx';
+import ProjectFilter from './components/ProjectFilter.jsx';
+import ProjectForm from './components/ProjectForm.jsx';
+import ProjectList from './components/ProjectList.jsx';
+import Navbar from './components/navbar.jsx';
+import { categories, initialProjects } from './data/projects.js';
 
-function App() {
-  const [count, setCount] = useState(0)
+export default function App() {
+  const [projects, setProjects] = useState(initialProjects);
+  const [query, setQuery] = useState('');
+  const [status, setStatus] = useState('All');
+  const [category, setCategory] = useState('All');
+  const [showForm, setShowForm] = useState(false);
+  const [editingProject, setEditingProject] = useState(null);
+
+  const filteredProjects = useMemo(() => {
+    const normalizedQuery = query.trim().toLowerCase();
+
+    return projects.filter((project) => {
+      const technologies = Array.isArray(project.technologies)
+        ? project.technologies.join(' ')
+        : project.technologies ?? '';
+      const searchableText = [
+        project.name,
+        project.description,
+        technologies,
+        project.category,
+      ]
+        .filter(Boolean)
+        .join(' ')
+        .toLowerCase();
+
+      return (
+        searchableText.includes(normalizedQuery) &&
+        (status === 'All' || project.status === status) &&
+        (category === 'All' || project.category === category)
+      );
+    });
+  }, [projects, query, status, category]);
+
+  function saveProject(project) {
+    if (editingProject) {
+      setProjects((currentProjects) =>
+        currentProjects.map((currentProject) =>
+          currentProject.id === editingProject.id
+            ? { ...project, id: editingProject.id, createdAt: editingProject.createdAt }
+            : currentProject,
+        ),
+      );
+    } else {
+      setProjects((currentProjects) => [project, ...currentProjects]);
+    }
+
+  }
+
+  function deleteProject(projectId) {
+    if (!window.confirm('Yakin ingin menghapus proyek ini?')) return;
+
+    setProjects((currentProjects) =>
+      currentProjects.filter((project) => project.id !== projectId),
+    );
+  }
+
+  function closeForm() {
+    setShowForm(false);
+    setEditingProject(null);
+  }
+
+  function openCreateForm() {
+    setEditingProject(null);
+    setShowForm(true);
+  }
+
+  function openEditForm(project) {
+    setEditingProject(project);
+    setShowForm(true);
+  }
 
   return (
     <>
-      <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
-        </div>
-        <div>
-          <h1>Get started</h1>
-          <p>
-            Edit <code>src/App.jsx</code> and save to test <code>HMR</code>
-          </p>
-        </div>
-        <button
-          type="button"
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
-        >
-          Count is {count}
-        </button>
-      </section>
+      <Navbar />
+      <main className="container dashboard">
+        <section className="welcome">
+          <div>
+            <div className="eyebrow">
+              <i />
+              YOUR PROJECT OVERVIEW
+            </div>
+            <h1>
+              Good work starts
+              <br />
+              with <span>good tracking.</span>
+            </h1>
+            <p>Semua proyek, terorganisasi dalam satu tempat.</p>
+          </div>
 
-      <div className="ticks"></div>
+          <button className="btn primary add" onClick={openCreateForm}>
+            ＋ Tambah proyek
+          </button>
+        </section>
 
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
-          </ul>
-        </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
-        </div>
-      </section>
+        <DashboardSummary projects={projects} />
+        <ProjectFilter
+          query={query}
+          onQueryChange={setQuery}
+          status={status}
+          onStatusChange={setStatus}
+          category={category}
+          onCategoryChange={setCategory}
+          categories={categories}
+          total={filteredProjects.length}
+        />
+        <ProjectList
+          projects={filteredProjects}
+          onDelete={deleteProject}
+          onEdit={openEditForm}
+        />
 
-      <div className="ticks"></div>
-      <section id="spacer"></section>
+        <footer className="footer">
+          <span>
+            ● DevTrack <em>· Personal workspace</em>
+          </span>
+          <span>Built to keep your progress moving.</span>
+        </footer>
+      </main>
+
+      {showForm && (
+        <ProjectForm
+          key={editingProject?.id ?? 'new'}
+          initialProject={editingProject}
+          onAdd={saveProject}
+          onClose={closeForm}
+        />
+      )}
     </>
-  )
+  );
 }
-
-export default App
