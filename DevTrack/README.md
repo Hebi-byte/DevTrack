@@ -62,14 +62,7 @@ Simpan screenshot pada `docs/screenshots/` dengan nama berikut:
 | [`04-validation-pipe.png`](docs/screenshots/04-validation-pipe.png) | `ValidationPipe` global pada `main.ts` |
 | [`05-get-all.png`](docs/screenshots/05-get-all.png) | REST Client: `GET /projects` dan response 200 |
 | [`06-get-detail.png`](docs/screenshots/06-get-detail.png) | REST Client: `GET /projects/:id` dan response 200 |
-| [`07-post.png`](docs/screenshots/07-post.png) | REST Client: `POST /projects` dan response project baru |
-| [`08-patch.png`](docs/screenshots/08-patch.png) | REST Client: `PATCH /projects/:id` dan response perubahan |
-| [`09-delete.png`](docs/screenshots/09-delete.png) | REST Client: `DELETE /projects/:id` dan response berhasil |
-| [`10-error-not-found.png`](docs/screenshots/10-error-not-found.png) | `GET` ID tidak ada dan response 404 |
-| [`11-error-validation.png`](docs/screenshots/11-error-validation.png) | Request DTO tidak valid dan response 400 |
-| [`12-error-conflict.png`](docs/screenshots/12-error-conflict.png) | Nama project duplikat dan response 409 |
-| [`13-frontend-create.png`](docs/screenshots/13-frontend-create.png) | Form frontend menambah project dan project tampil di dashboard |
-| [`14-frontend-edit-delete.png`](docs/screenshots/14-frontend-edit-delete.png) | Frontend mengubah lalu menghapus project |
+| [alt text](docs/screenshots/image.png) | Frontend mengubah lalu menghapus project |
 
 Screenshot endpoint diambil dari REST Client dengan request dan response terlihat dalam satu gambar. File request sudah tersedia di `backend/projects.http`.
 
