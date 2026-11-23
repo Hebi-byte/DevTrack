@@ -1,0 +1,61 @@
+@baseUrl = http://localhost:3000
+
+### Semua project
+GET {{baseUrl}}/projects
+
+### Detail project
+GET {{baseUrl}}/projects/PRJ-001
+
+### Tambah project
+POST {{baseUrl}}/projects
+Content-Type: application/json
+
+{
+  "name": "Portfolio Haryanto",
+  "description": "Website portfolio untuk menampilkan karya dan pengalaman.",
+  "category": "Web Development",
+  "technologies": ["React", "NestJS"],
+  "status": "Planning",
+  "progress": 10,
+  "deadline": "2026-12-31",
+  "githubUrl": "https://github.com/haryanto/portfolio"
+}
+
+### Ubah project
+PATCH {{baseUrl}}/projects/PRJ-001
+Content-Type: application/json
+
+{ "status": "Completed", "progress": 100 }
+
+### Hapus project
+DELETE {{baseUrl}}/projects/PRJ-001
+
+### Error: project tidak ditemukan
+GET {{baseUrl}}/projects/invalid-id
+
+### Error: validasi DTO gagal
+POST {{baseUrl}}/projects
+Content-Type: application/json
+
+{
+  "name": "A",
+  "description": "pendek",
+  "category": "Kategori Salah",
+  "technologies": "React",
+  "status": "Status Salah",
+  "progress": 150,
+  "githubUrl": "bukan-url"
+}
+
+### Error: nama project duplikat
+POST {{baseUrl}}/projects
+Content-Type: application/json
+
+{
+  "name": "DevTrack Dashboard",
+  "description": "Nama ini sengaja dibuat sama untuk menguji conflict.",
+  "category": "Web Development",
+  "technologies": ["React"],
+  "status": "Planning",
+  "progress": 0
+}

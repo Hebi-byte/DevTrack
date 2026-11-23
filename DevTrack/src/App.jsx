@@ -1,10 +1,13 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import DashboardSummary from './components/DashboardSummary.jsx';
 import ProjectFilter from './components/ProjectFilter.jsx';
 import ProjectForm from './components/ProjectForm.jsx';
 import ProjectList from './components/ProjectList.jsx';
-import Navbar from './components/navbar.jsx';
+import Navbar from './components/Navbar.jsx';
+import { projectsApi } from './lib/api.js';
 import { categories, initialProjects } from './data/projects.js';
+
+const demoModeMessage = 'Backend belum aktif, menggunakan data demo.';
 
 export default function App() {
   const [projects, setProjects] = useState(initialProjects);
@@ -13,6 +16,11 @@ export default function App() {
   const [category, setCategory] = useState('All');
   const [showForm, setShowForm] = useState(false);
   const [editingProject, setEditingProject] = useState(null);
+  const [apiError, setApiError] = useState('');
+
+  useEffect(() => {
+    projectsApi.list().then(setProjects).catch(() => setApiError(demoModeMessage));
+  }, []);
 
   const filteredProjects = useMemo(() => {
     const normalizedQuery = query.trim().toLowerCase();
@@ -39,27 +47,32 @@ export default function App() {
     });
   }, [projects, query, status, category]);
 
-  function saveProject(project) {
-    if (editingProject) {
-      setProjects((currentProjects) =>
-        currentProjects.map((currentProject) =>
-          currentProject.id === editingProject.id
-            ? { ...project, id: editingProject.id, createdAt: editingProject.createdAt }
-            : currentProject,
-        ),
-      );
-    } else {
-      setProjects((currentProjects) => [project, ...currentProjects]);
+  async function saveProject(project) {
+    const payload = { ...project };
+    delete payload.id;
+    delete payload.createdAt;
+    try {
+      const saved = editingProject
+        ? await projectsApi.update(editingProject.id, payload)
+        : await projectsApi.create(payload);
+      setProjects((currentProjects) => editingProject
+        ? currentProjects.map((item) => item.id === saved.id ? saved : item)
+        : [saved, ...currentProjects]);
+      setApiError('');
+    } catch (error) {
+      setApiError(error.message);
     }
-
   }
 
-  function deleteProject(projectId) {
+  async function deleteProject(projectId) {
     if (!window.confirm('Yakin ingin menghapus proyek ini?')) return;
-
-    setProjects((currentProjects) =>
-      currentProjects.filter((project) => project.id !== projectId),
-    );
+    try {
+      await projectsApi.remove(projectId);
+      setProjects((currentProjects) => currentProjects.filter((project) => project.id !== projectId));
+      setApiError('');
+    } catch (error) {
+      setApiError(error.message);
+    }
   }
 
   function closeForm() {
@@ -100,6 +113,7 @@ export default function App() {
           </button>
         </section>
 
+        {apiError && <p className="error" role="status">{apiError}</p>}
         <DashboardSummary projects={projects} />
         <ProjectFilter
           query={query}
